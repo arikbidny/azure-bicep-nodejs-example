@@ -3,19 +3,28 @@ on: workflow_dispatch
 
 jobs:
   deploy:
+    env:
+      RESOURCE_GROUP: mtc-bicep-webapp-rg
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@master
-      - name: Install Azure Bicep
-        run: npm install -g @azure/bicep
+      # - name: Install Azure Bicep
+      #   run: npm install -g @azure/bicep
       - name: Login to Azure
         uses: Azure/login@v1.4.3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: List files
         run: ls -la
-      - name: Build bicep script
-        run: bicep build app-service-plan.bicep
-      - name: Deploy bicep script
-        run: bicep deploy -g mtc-bicep-webapp-rg -n app-service-plan -l WestEurope app-service-plan.bicep
+      - name: Deploy bicep
+        uses: azure/arm-deploy@v1.4.3
+        with: 
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: ./app-service-plan.bicep
+          failOnStdErr: false
+      # - name: Build bicep script
+      #   run: bicep build app-service-plan.bicep
+      # - name: Deploy bicep script
+      #   run: bicep deploy -g mtc-bicep-webapp-rg -n app-service-plan -l WestEurope app-service-plan.bicep
