@@ -13,6 +13,8 @@ jobs:
         uses: Azure/login@v1.4.3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: List files
+        run: ls -la
       - name: Build bicep script
         run: bicep build app-service-plan.bicep
       - name: Deploy bicep script
