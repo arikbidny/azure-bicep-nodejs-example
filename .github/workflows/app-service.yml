@@ -1,0 +1,19 @@
+name: Deploy app service
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Install Azure Bicep
+        run: npm install -g @azure/bicep
+      - name: Login to Azure
+        uses: Azure/login@v1.4.3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Build bicep script
+        run: bicep build app-service-plan.bicep
+      - name: Deploy bicep script
+        run: bicep deploy -g mtc-bicep-webapp-rg -n app-service-plan -l WestEurope app-service-plan.bicep
