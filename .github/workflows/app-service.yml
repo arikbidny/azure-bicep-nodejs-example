@@ -32,17 +32,23 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@master
+      - name: Login to Azure
+        uses: Azure/login@v1.4.3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: nodejs-docs-hello-world/package-lock.json
       - name: npm install, build
+        working-directory: ./nodejs-docs-hello-world
         run: |
-          cd nodejs-docs-hello-world
           npm install 
           zip -r my-app.zip . 
       - name: Deploy to webapp
+        working-directory: ./nodejs-docs-hello-world
         # wapp-mtc-webapp-nodejs
         run: |
           ls -la
