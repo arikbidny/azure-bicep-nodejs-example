@@ -1,10 +1,12 @@
 name: Deploy app service
 on: workflow_dispatch
 
+env:
+  NODE_VERSION: '14.x'
+  RESOURCE_GROUP: mtc-bicep-webapp-rg
+
 jobs:
-  deploy:
-    env:
-      RESOURCE_GROUP: mtc-bicep-webapp-rg
+  deployResource:  
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -24,6 +26,30 @@ jobs:
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: ./app-service-plan.bicep
           failOnStdErr: false
+  buildAndDeployApp:
+    runs-on: ubuntu-latest
+    needs: deployResource
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: npm install, build
+        run: |
+          cd nodejs-docs-hello-world
+          npm install 
+          zip -r my-app.zip . 
+      - name: Deploy to webapp
+        # wapp-mtc-webapp-nodejs
+        run: |
+          ls -la
+          az webapp deployment source config-zip --resource-group ${{ env.RESOURCE_GROUP }} --name wapp-mtc-webapp-nodejs --src ./my-app.zip
+    
+
+    
       # - name: Build bicep script
       #   run: bicep build app-service-plan.bicep
       # - name: Deploy bicep script
